@@ -45,7 +45,9 @@ try{
     $summonerName = str_replace('%20', ' ',$_POST['summoner']);
     $nameFound = false;
     $endLoop = false;
-    $firstTime = false;
+    $stampIt = false;
+    $timeStamp = 0;
+    $championJson = 0;
     $result = $stmt->setFetchMode(PDO::FETCH_ASSOC);
     foreach(new ArrayIterator($stmt->fetchAll()) as $k=>$entry) {
         if($endLoop){
@@ -55,9 +57,18 @@ try{
             if($summonerName == $val){
                 $nameFound = true;
             }
-            else if($nameFound){
+            else if($nameFound && $endLoop == false){
                 $summoner = $val;
                 $endLoop = true;
+               // break;
+            }
+            //skip over the json in the database
+            else if($endLoop == true && $stampIt == false){
+                $championJson = $val;
+                $stampIt = true;
+            }
+            else if($stampIt == true){
+                $timeStamp = $val;
                 break;
             }
         }
@@ -70,7 +81,6 @@ try{
         //$summonerName = str_replace(' ', '%20',$_POST['summoner']);
         $urlSummoner = str_replace(' ', '%20',$_POST['summoner']);
         $summonerId = @file_get_contents("https://na1.api.riotgames.com/lol/summoner/v4/summoners/by-name/".$urlSummoner."?api_key=".$api);
-        $firstTime = true;
          //@ suppresses 404 warning
 
         
@@ -80,7 +90,6 @@ try{
             new RecursiveArrayIterator(json_decode($summonerId, TRUE)),
             RecursiveIteratorIterator::SELF_FIRST);
             foreach($jsonIterator as $key=>$val){
-                echo "<br> test".$key."<br>";
                 if($key == "id"){   
                 $summoner = $val;
         
@@ -89,9 +98,11 @@ try{
         $data = [
             'summonerName'=>$summonerName,
             'summonerId'=>$summoner,
+            'timestamp'=>time(),
+            
         ];
         
-        $stmt = $conn->prepare("INSERT into summoners (summonerName, summonerId) Values (:summonerName, :summonerId)");
+        $stmt = $conn->prepare("INSERT into summoners (summonerName, summonerId, timestamp) Values (:summonerName, :summonerId, :timestamp)");
         $stmt->execute($data);
     }
 }
@@ -100,16 +111,53 @@ catch(Exception $e) {
     exit;
     
 }
-$conn = null;
+//$conn = null;
 
     
     
 //$summoner = "7xefWD4FSDz2U45Rzcgepr5OgKO9bmiDyFfoQRV6VlrWPds";
+    
+//add functionality to prevent api calls younger than a day (86000 seconds in a day, if the saved time stamp + 1 day is less than current time, than we can make a new api call)
+    
+if($nameFound){
+    if(($timeStamp + 86000) < time()){
+       // echo "last call was older than one day";
+        $championMastery = file_get_contents("https://na1.api.riotgames.com/lol/champion-mastery/v4/champion-masteries/by-summoner/".$summoner."?api_key=".$api);
+        
+                $data = [
+            'summonerName'=>$summonerName,
+            'timestamp'=>time(),
+            
+        ];
+        
+        $stmt = $conn->prepare("UPDATE summoners SET timestamp=:timestamp WHERE (summonerName=:summonerName)");
+        $stmt->execute($data);
+    }
+    else{
+        $timeLeft = gmdate("H:i:s",(($timeStamp + 86000) - time()));
+        echo "Note that champion data is not up to date!<br> Time remaining until you can update this data: ".$timeLeft." (Hours:Minutes:Seconds)";
+        $championMastery = $championJson;
+    }
+}
+    else{
+      //  echo "<br> name wasnt found";
+        $championMastery = file_get_contents("https://na1.api.riotgames.com/lol/champion-mastery/v4/champion-masteries/by-summoner/".$summoner."?api_key=".$api);
+        
+                        $data = [
+            'summonerName'=>$summonerName,
+            'championMastery'=>$championMastery,
+            
+        ];
+        
+        $stmt = $conn->prepare("UPDATE summoners SET championMastery=:championMastery WHERE (summonerName=:summonerName)");
+        $stmt->execute($data);
+    }
 
-$championMastery = file_get_contents("https://na1.api.riotgames.com/lol/champion-mastery/v4/champion-masteries/by-summoner/".$summoner."?api_key=".$api);
+$conn = null;
 
-//method to obtain champion name and key from https://riot-api-libraries.readthedocs.io/en/latest/ddragon.html (update upon new champion release/patch)
-$staticData = file_get_contents("http://ddragon.leagueoflegends.com/cdn/9.23.1/data/en_US/champion.json");
+//method to obtain champion name and key from https://ddragon.leagueoflegends.com/api/versions.json (updates by pulling current patch from link below)
+$currentPatch = json_decode(file_get_contents("https://ddragon.leagueoflegends.com/api/versions.json"),true);
+$staticData = file_get_contents("http://ddragon.leagueoflegends.com/cdn/".$currentPatch[0]."/data/en_US/champion.json");
 $champions = [];
 $championKey = 0;
 $championPoints = '';
