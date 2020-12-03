@@ -118,9 +118,10 @@ catch(Exception $e) {
 //$summoner = "7xefWD4FSDz2U45Rzcgepr5OgKO9bmiDyFfoQRV6VlrWPds";
     
 //add functionality to prevent api calls younger than a day (86000 seconds in a day, if the saved time stamp + 1 day is less than current time, than we can make a new api call)
+    //lowering time from 86000 (1day) to 1800(30 min) for api calls until i find a proper time to use
     
 if($nameFound){
-    if(($timeStamp + 86000) < time()){
+    if(($timeStamp + 1800) < time()){
        // echo "last call was older than one day";
         $championMastery = file_get_contents("https://na1.api.riotgames.com/lol/champion-mastery/v4/champion-masteries/by-summoner/".$summoner."?api_key=".$api);
         
@@ -134,7 +135,7 @@ if($nameFound){
         $stmt->execute($data);
     }
     else{
-        $timeLeft = gmdate("H:i:s",(($timeStamp + 86000) - time()));
+        $timeLeft = gmdate("H:i:s",(($timeStamp + 1800) - time()));
         echo "Note that champion data is not up to date!<br> Time remaining until you can update this data: ".$timeLeft." (Hours:Minutes:Seconds)";
         $championMastery = $championJson;
     }
