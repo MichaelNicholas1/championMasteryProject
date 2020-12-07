@@ -2,10 +2,33 @@
 <html>
     <head>
     <link rel="stylesheet" type="text/css" href="style.css">
+            <!--====== Favicon Icon ======-->
+    <link rel="shortcut icon" href="assets/images/favicon.png" type="image/png">
+        
+    <!--====== Magnific Popup CSS ======-->
+    <link rel="stylesheet" href="assets/css/magnific-popup.css">
+        
+    <!--====== Slick CSS ======-->
+    <link rel="stylesheet" href="assets/css/slick.css">
+        
+    <!--====== Line Icons CSS ======-->
+    <link rel="stylesheet" href="assets/css/LineIcons.css">
+        
+    <!--====== Bootstrap CSS ======-->
+    <link rel="stylesheet" href="assets/css/bootstrap.min.css">
+    
+    <!--====== Default CSS ======-->
+    <link rel="stylesheet" href="assets/css/default.css">
+    
+    <!--====== Style CSS ======-->
+    <link rel="stylesheet" href="assets/css/style.css">
     </head>
 <body>
+    
+
+    
 <form  id ="selection" method='post'>
-      I want all champions with mastery level 
+      I want all champions with mastery level (level number, not points!) 
 <select name='option'>
   <option value="less"> Less than </option>
   <option value="greater"> Greater than </option>
@@ -14,28 +37,17 @@
   <option value="greatereq">Greater than or equal to</option>
     
 </select>
-    <input type="number" id="level" name="level" min = 1 max = 7 required = true>
+    <input placeholder = "1-7" type="number" id="level" name="level" min = 1 max = 7 required = true>
     for <input type='text' id ="summoner" name = "summoner" required=true placeholder="summoner name here">
     <input type="submit" id = "selection" name="selection" />
+    (summoner name is case sensitive!)
 </form>  
-
-
     
     
     
 <?php
     require 'config.php';
-//INSERT into summoners (summonerName, summonerId)
-//Values ('ChrisC1208', '7xefWD4FSDz2U45Rzcgepr5OgKO9bmiDyFfoQRV6VlrWPds');
-    
-    
-    
-//https://na1.api.riotgames.com/lol/summoner/v4/summoners/by-name/Cannabomb%200?api_key=RGAPI-95718d02-068b-4f72-ab27-c58baac91369    
-/*summoner id's
-* chrisc1208 - 7xefWD4FSDz2U45Rzcgepr5OgKO9bmiDyFfoQRV6VlrWPds
-* addmeelbakro - AFozj9ImPJgOcZDJsylcunOjnfg2DMNLbJkBs8dlIxAOGzM
-* addmeelbakro - stored locally to prevent duplicate api calls --> result.json
-*/
+
 $found = false;
 if(isset($_POST['summoner'])){        
 try{
@@ -194,7 +206,24 @@ $jsonIterator = new RecursiveIteratorIterator(
 
     
     
-     
+echo '            <div class="row justify-content-center">';
+    
+    
+            $name = "";
+            $box = '
+                                            <div class="col-lg-4 col-md-7 col-sm-9">
+                    <div class="single-features mt-40">
+                        <div class="features-title-icon d-flex justify-content-between"> ';
+                            
+
+    
+                    /*    '<div class="features-content">
+                            <p class="text">Short description for the ones who look for something new. Short description for the ones who look for something new.</p>
+                            <a class="features-btn" href="#">LEARN MORE</a>
+                        </div>
+                    </div> <!-- single features -->
+                </div> '; */
+                 
 echo "<h2>Champion Mastery Statistics for ".$_POST['summoner'].", Points Descending</h2>";
 foreach($jsonIterator as $key=>$val){
     if(gettype($val) == 'array'){
@@ -218,44 +247,108 @@ foreach($jsonIterator as $key=>$val){
         }
     }
         else if ($key == "championId") {
+
             
             //filter for champion level
-                if(isset($_POST['option']) && isset($_POST['level'])){
-                    
+                if(isset($_POST['option']) && isset($_POST['level'])){                                                                                                       
                     if($option == "less"){
                         if($championLevel < $level){
+                            echo $box;
                             $name = array_search($val, $champions);
-                            echo "Champion Name: ".$name."<br> Champion Level: ".$championLevel."<br> Champion Points: ".$championPoints."<br>Champion Points Until Next Level: ".$championPointsUntilNextLevel."<br>";
+                            $namePic = str_replace(" ","",$name);
+                            $namePic = str_replace("'","",$namePic);
+                            echo '<h4 class="features-title"><a href="#">'.$name.'</a></h4> ';
+                                        $champIcon =                ' <div class="champ-thumbnail">
+                               <img class="img-thumbnail" src="assets/images/default_champion_tiles/'.$namePic.'_0.jpg" > 
+                            </div>
+                        </div> ';
+                            echo $champIcon;
+                            echo "Champion Level: ".$championLevel."<br> Champion Points: ".$championPoints."<br>Champion Points Until Next Level: ".$championPointsUntilNextLevel."<br>";
                             echo "----------------------------------------- <br>";
+                            echo '<div class="features-content">
+                        </div>
+                    </div> <!-- single features -->
+                </div> ';
                         }
                     }
                         else if($option == "greater"){
                             if($championLevel > $level){
-                                $name = array_search($val, $champions);
-                                echo "Champion Name: ".$name."<br> Champion Level: ".$championLevel."<br> Champion Points: ".$championPoints."<br>.Champion Points Until Next Level: ".$championPointsUntilNextLevel."<br>";
-                                echo "----------------------------------------- <br>";
+echo $box;
+                            $name = array_search($val, $champions);
+                                                            $namePic = str_replace(" ","",$name);
+                            $namePic = str_replace("'","",$namePic);
+                            echo '<h4 class="features-title"><a href="#">'.$name.'</a></h4> ';
+                                            $champIcon =                ' <div class="champ-thumbnail">
+                               <img class="img-thumbnail" src="assets/images/default_champion_tiles/'.$namePic.'_0.jpg" > 
+                            </div>
+                        </div> ';
+                            echo $champIcon;
+                            echo "Champion Level: ".$championLevel."<br> Champion Points: ".$championPoints."<br>Champion Points Until Next Level: ".$championPointsUntilNextLevel."<br>";
+                            echo "----------------------------------------- <br>";
+                            echo '<div class="features-content">
+                        </div>
+                    </div> <!-- single features -->
+                </div> ';
                             }
                     }
                         else if($option == "equal"){
                             if($championLevel == $level){
-                                $name = array_search($val, $champions);
-                                echo "Champion Name: ".$name."<br> Champion Level: ".$championLevel."<br> Champion Points: ".$championPoints."<br>Champion Points Until Next Level: ".$championPointsUntilNextLevel."<br>";
-                                echo "----------------------------------------- <br>";
+echo $box;
+                            $name = array_search($val, $champions);
+                                                            $namePic = str_replace(" ","",$name);
+                            $namePic = str_replace("'","",$namePic);
+                            echo '<h4 class="features-title"><a href="#">'.$name.'</a></h4> ';
+                                            $champIcon =                ' <div class="champ-thumbnail">
+                               <img class="img-thumbnail" src="assets/images/default_champion_tiles/'.$namePic.'_0.jpg" > 
+                            </div>
+                        </div> ';
+                            echo $champIcon;
+                            echo "Champion Level: ".$championLevel."<br> Champion Points: ".$championPoints."<br>Champion Points Until Next Level: ".$championPointsUntilNextLevel."<br>";
+                            echo "----------------------------------------- <br>";
+                            echo '<div class="features-content">
+                        </div>
+                    </div> <!-- single features -->
+                </div> ';
                             }
                     }
                         else if($option == "lesseq"){
                             if($championLevel <= $level){
-                                $name = array_search($val, $champions);
-                                echo "Champion Name: ".$name."<br> Champion Level: ".$championLevel."<br> Champion Points: ".$championPoints."<br>Champion Points Until Next Level: ".$championPointsUntilNextLevel."<br>";
-                                echo "----------------------------------------- <br>";
+echo $box;
+                            $name = array_search($val, $champions);
+                                                            $namePic = str_replace(" ","",$name);
+                            $namePic = str_replace("'","",$namePic);
+                            echo '<h4 class="features-title"><a href="#">'.$name.'</a></h4> ';
+                                            $champIcon =                ' <div class="champ-thumbnail">
+                               <img class="img-thumbnail" src="assets/images/default_champion_tiles/'.$namePic.'_0.jpg" > 
+                            </div>
+                        </div> ';
+                            echo $champIcon;
+                            echo "Champion Level: ".$championLevel."<br> Champion Points: ".$championPoints."<br>Champion Points Until Next Level: ".$championPointsUntilNextLevel."<br>";
+                            echo "----------------------------------------- <br>";
+                            echo '<div class="features-content">
+                        </div>
+                    </div> <!-- single features -->
+                </div> ';
                             }
                     }
                         else if($option == "greatereq"){
                             if($championLevel >= $level){
-                                                            echo $championPoints."<br>";
-                                $name = array_search($val, $champions);
-                                echo "Champion Name: ".$name."<br> Champion Level: ".$championLevel."<br> Champion Points: ".$championPoints."<br>Champion Points Until Next Level: ".$championPointsUntilNextLevel."<br>";
-                                echo "----------------------------------------- <br>";
+echo $box;
+                            $name = array_search($val, $champions);
+                            $namePic = str_replace(" ","",$name);
+                            $namePic = str_replace("'","",$namePic);
+                            echo '<h4 class="features-title"><a href="#">'.$name.'</a></h4> ';
+                                            $champIcon =                ' <div class="champ-thumbnail">
+                               <img class="img-thumbnail" src="assets/images/default_champion_tiles/'.$namePic.'_0.jpg" > 
+                            </div>
+                        </div> ';
+                            echo $champIcon;
+                            echo "Champion Level: ".$championLevel."<br> Champion Points: ".$championPoints."<br>Champion Points Until Next Level: ".$championPointsUntilNextLevel."<br>";
+                            echo "----------------------------------------- <br>";
+                            echo '<div class="features-content">
+                        </div>
+                    </div> <!-- single features -->
+                </div>';
                             }
                     }
         }
